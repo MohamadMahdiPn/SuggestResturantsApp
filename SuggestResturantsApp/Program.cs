@@ -134,9 +134,16 @@ static void TrainigV2()
     var trainer = mlContext.Recommendation().Trainers.MatrixFactorization(finalOption);
 
     var trainerPipeline = dataPreProcessingPipeline.Append(trainer);
+    Console.WriteLine("Training Model");
+
+    var model = trainerPipeline.Fit(trainingDataView);
+    Console.WriteLine("Which User?");
+    var testUserId = Console.ReadLine();
+
+    var predictEngine = mlContext.Model.CreatePredictionEngine<ModelInput, ModelOutput>(model);
 
 
-
+   
     var crossValMetrics = mlContext.Recommendation()
         .CrossValidate(data: trainingDataView, estimator: trainerPipeline,
         labelColumnName: "TotalRating");
@@ -150,7 +157,13 @@ static void TrainigV2()
     Console.WriteLine($"Cross validated RSquared : {averageRSquared:#.000}");
     Console.WriteLine();
     HyperParameterExploration(mlContext, dataPreProcessingPipeline, trainingDataView);
+    var prediction = predictEngine.Predict(new ModelInput()
+    {
+        RestaurantName = "Restaurant Wu Zhuo Yi",
+        UserId = "CLONED",
 
+    });
+    Console.WriteLine($"Predicted {prediction.Score:#:0} for Restaurant Wu Zhuo Yi");
 
 
 }
